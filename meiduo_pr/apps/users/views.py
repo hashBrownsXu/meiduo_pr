@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django import http
 import re
@@ -6,6 +6,7 @@ from .models import User
 from django.db import DatabaseError
 from django.contrib.auth import login
 import logging
+from meiduo_pr.utils.response_code import RETCODE
 
 class RegisterView(View):
     # def post(self, request):
@@ -41,7 +42,7 @@ class RegisterView(View):
         # password两次输入的要判断是否一样，不需要使用正则表达式。
         if password != password2:
             return http.HttpResponseForbidden('两次输入的密码不一致')
-        if not re.match(r'1[3-9]/d{9}]', mobile):
+        if not re.match(r'1[3-9]\d{9}', mobile):
             return http.HttpResponseForbidden('电话号码格式不正确，请输入正确的电话号码')
         # if not re.match(r'', sms_code):
             # reture http.HttpResponseForbidden('电子邮箱格式不正确，请输入正确的电子邮箱地址')
@@ -57,7 +58,7 @@ class RegisterView(View):
         出错需要处理 导入databaseError基类(数据库稳如狗，一般不会错)
         '''
         try:
-            user = User.objects.create_user(username=username, password = password, mobile = mobile)
+            user = User.objects.create_user(username=username, password=password, mobile=mobile)
         except DatabaseError as e:
             # 出错信息记录到log中
             logging.error(e)
@@ -78,7 +79,21 @@ class RegisterView(View):
         # 解决办法：创建一个新的应用contents,在里面的view里面重定向的页面
         # 当然这里需要加入路由地址
         # index.html使用老师给出的写死了的页面，不使用static里面做好的，一位内做好的那个index.html页面需要传入content参数，而在这里还没有给出数据，所以使用老师给出的写死的先
-        #
 
+
+class UsernameCountView(View):
+    def get(self, request, username):
+
+        # 查询当前用户名的个数要么0要么1 1代表重复
+        count = User.objects.filter(username=username).count()
+
+        return http.JsonResponse({'count': count, 'code': RETCODE.OK, 'errmsg': 'OK'})
+
+
+class MobileCountView(View):
+
+    def get(self, request, mobile):
+        count = User.objects.filter(mobile=mobile).count()
+        return http.JsonResponse({'count': count, 'code': RETCODE.OK, 'errmsg': 'OK'})
 
     # Create your views here.

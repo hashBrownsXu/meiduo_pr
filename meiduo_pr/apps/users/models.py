@@ -1,9 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-class User(AbstractUser):
 
-    moblie = models.CharField(max_length=20, unique=True, verbose_name='手机号')
+class User(AbstractUser):
+    mobile = models.CharField(max_length=20, unique=True, verbose_name='手机号')
 
     class Meta:
         db_table = 'tb_users'

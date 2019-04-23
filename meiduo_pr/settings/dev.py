@@ -93,12 +93,12 @@ WSGI_APPLICATION = 'meiduo_pr.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # 数据库引擎
-        'HOST': '127.0.0.1', # 数据库主机
-        'PORT': 3306, # 数据库端口
-        'USER': 'meiduo', # 数据库用户名
+        'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
+        'HOST': '127.0.0.1',     # 数据库主机
+        'PORT': 3306,   # 数据库端口
+        'USER': 'meiduo',   # 数据库用户名
         'PASSWORD': '123', # 数据库用户密码
-        'NAME': 'meiduo_mall' # 数据库名字
+        'NAME': 'meiduo_mall'   # 数据库名字
     },
 }
 
@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
