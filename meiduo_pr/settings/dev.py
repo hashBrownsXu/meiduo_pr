@@ -11,12 +11,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os
+import os, sys
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))  # 追加导包路径
+# print(sys.path)
+"""
+   ['/home/python/Desktop/meiduo/meiduo_pr', 
+    '/home/python/Desktop/meiduo/meiduo_pr',
+    '/snap/pycharm-professional/127/helpers/pycharm_display', 
+    '/home/python/.virtualenvs/meiduo_mall_env/lib/python36.zip',
+    '/home/python/.virtualenvs/meiduo_mall_env/lib/python3.6', 
+    '/home/python/.virtualenvs/meiduo_mall_env/lib/python3.6/lib-dynload', 
+    '/usr/lib/python3.6', '/home/python/.virtualenvs/meiduo_mall_env/lib/python3.6/site-packages', 
+    '/snap/pycharm-professional/127/helpers/pycharm_matplotlib_backend']
+"""
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -38,7 +49,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'meiduo_pr.apps.users',
+    # 路径追加以后可以写的更加简洁
+    'users',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -191,3 +206,4 @@ LOGGING = {
     }
 }
 
+AUTH_USER_MODEL = 'users.User'
