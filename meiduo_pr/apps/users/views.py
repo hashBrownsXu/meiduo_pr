@@ -7,6 +7,9 @@ from django.db import DatabaseError
 from django.contrib.auth import login
 import logging
 from meiduo_pr.utils.response_code import RETCODE
+from meiduo_pr.apps.verifications.views import get_redis_connection
+from meiduo_pr.apps.verifications.views import SMSCodeView
+
 
 class RegisterView(View):
     # def post(self, request):
@@ -50,6 +53,15 @@ class RegisterView(View):
             return http.HttpResponseForbidden('请勾选用户协议')
 
         # TODO： 短信验证
+        # 获取redis中的verify_code数据（就是短信验证码）
+        redis_conn = get_redis_connection('verify_code')
+
+        # 获取redis中的响应
+        sms_code_server = redis_conn.get('sms_ %s' % mobile)
+
+        # 先判断验证码是不是为空，在判断
+        if sms_code_server is None or sms_code != sms_code_server.decode():
+            return http.HttpResponseForbidden('短信验证码有误')
 
         '''
         创建user
