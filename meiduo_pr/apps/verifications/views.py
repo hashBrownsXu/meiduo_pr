@@ -97,15 +97,12 @@ class SMSCodeView(View):
         # 注意：一定要执行管道
         pl.execute()
 
-
         # 发送短信验证码
         # sms.CCP().send_template_sms(mobile, [sms_code, SMS_CODE_REDIS_EXPIRES // 60],
         #                             SEND_SMS_TEMPLATE_ID)
         # 这里的send先不执行，等到后面异步做好以后在执行
 
-
         send_sms_code.delay(mobile, sms_code)
-
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '发送短信成功'})
 

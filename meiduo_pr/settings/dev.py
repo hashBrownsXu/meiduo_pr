@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # 路径追加以后可以写的更加简洁
     'users',
     'oauth',
+    'areas',
 ]
 
 

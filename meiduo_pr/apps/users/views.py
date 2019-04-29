@@ -173,16 +173,60 @@ class LogoutView(View):
         return response
 
 
+# class UserInfoView(View):
+#     def get(self, request):
+#         '''提供用户中心界面'''
+#         # 判断是否登陆，登陆了就返回用户中心，没有就返回登陆界面
+#         # user = request.user  # 通过请求对象获取user（从session里面找）
+#         # 使用 is_authenticated 方法，如果是匿名用户就返回false，
+#         # 用户存在就返回true
+#         # if user.is_authenticated:
+#         #     return render(request, 'user_center_info.html')
+#         # else:
+#         #     return render(request, '/login/?next=/info/')
+#         return render(request, 'user_center_info.html')
+#     # return render(request, 'XXXX.html')
+#
+
 class UserInfoView(View):
+    """用户中心"""
+
     def get(self, request):
-        '''提供用户中心界面'''
-        # 判断是否登陆，登陆了就返回用户中心，没有就返回登陆界面
-        # user = request.user  # 通过请求对象获取user（从session里面找）
-        # 使用 is_authenticated 方法，如果是匿名用户就返回false，
-        # 用户存在就返回true
-        # if user.is_authenticated:
-        #     return render(request, 'user_center_info.html')
-        # else:
-        #     return render(request, '/login/?next=/info/')
-        return render(request, 'user_center_info.html')
-    # return render(request, 'XXXX.html')
+        """提供个人信息界面"""
+        context = {
+            'username': request.user.username,
+            'mobile': request.user.mobile,
+            'email': request.user.email,
+            'email_active': request.user.email_active
+        }
+        return render(request, 'user_center_info.html', context=context)
+
+class EmailView(View):
+    """添加邮箱"""
+
+    def put(self, request):
+        """实现添加邮箱逻辑"""
+        # 接收参数
+        json_dict = json.loads(request.body.decode())
+        email = json_dict.get('email')
+
+        # 校验参数
+        if not email:
+            return http.HttpResponseForbidden('缺少email参数')
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.HttpResponseForbidden('参数email有误')
+
+        # 赋值email字段
+        try:
+            request.user.email = email
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
+
+        if not request.user.is_authenticated():
+            return http.JsonResponse({'code': RETCODE.SESSIONERR, 'errmsg': '用户未登录'})
+        pass
+    #     # 响应添加邮箱结果
+    #     return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '添加邮箱成功'})
+    #
