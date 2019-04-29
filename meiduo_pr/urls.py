@@ -21,8 +21,18 @@ from .apps import contents, users
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+
+    #
     url(r'^', include('users.urls', namespace='users')),
+
+    #
     url(r'^', include('contents.urls', namespace='contents')),
+
+    #
     url(r'^', include('verifications.urls', namespace='verifications')),
+    # url(r'^', include('login.urls', namespace='login')),
+
+    # QQ模块
+    url(r'^', include('oauth.urls', namespace='oauth')),
 
 ]

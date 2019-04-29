@@ -11,7 +11,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os, sys
+import os
+import sys
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -37,7 +38,8 @@ SECRET_KEY = '1ax7^%g+ty@h$+u$0%9ohu00z97z&0j=#9%*30l(687$k^@phi'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.meiduo.site']
+# ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -52,6 +54,7 @@ INSTALLED_APPS = [
     # 'meiduo_pr.apps.users',
     # 路径追加以后可以写的更加简洁
     'users',
+    'oauth',
 ]
 
 
@@ -214,3 +217,10 @@ LOGGING = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileAuthBackend']
+LOGIN_URL = '/login/'
+
+
+QQ_CLIENT_ID = '101518219'
+QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'

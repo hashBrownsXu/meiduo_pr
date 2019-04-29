@@ -1,15 +1,18 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django import http
-import re
-from .models import User
 from django.db import DatabaseError
-from django.contrib.auth import login
-import logging
-from meiduo_pr.utils.response_code import RETCODE
-from meiduo_pr.apps.verifications.views import get_redis_connection
-from meiduo_pr.apps.verifications.views import SMSCodeView
+from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate
+from django.urls import reverse
 
+from .models import User
+from meiduo_pr.utils.response_code import RETCODE
+from verifications.views import get_redis_connection
+from verifications.views import SMSCodeView
+
+import re
+import logging
 
 class RegisterView(View):
     # def post(self, request):
@@ -109,3 +112,77 @@ class MobileCountView(View):
         return http.JsonResponse({'count': count, 'code': RETCODE.OK, 'errmsg': 'OK'})
 
     # Create your views here.
+
+
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'login.html')
+
+    def post(self, request):
+        # 获取传来的参数
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        remembered = request.POST.get('remembered')
+
+        # 检验是否全部参数齐全
+        if not all([username, password]):
+            return http.HttpResponseForbidden('缺少必传参数')
+
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
+            return http.HttpResponseForbidden('请输入正确的用户名或手机号')
+
+            # 判断密码是否是8-20个数字
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', password):
+            return http.HttpResponseForbidden('密码最少8位，最长20位')
+
+        # 验证登陆状态
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return render(request, 'login.html', {'account_errmsg': '用户名或密码错误'})
+
+        # 实现状态保持
+        login(request, user)
+        # 设置状态保持的周期
+        if remembered != 'on':
+            # 没有记住用户：浏览器会话结束就过期
+            request.session.set_expiry(0)
+        else:
+            # 记住用户：None表示两周后过期
+            request.session.set_expiry(None)
+
+        response = redirect(request.GET.get('next', '/'))
+        response.set_cookie('username', user.username, max_age=60 * 60)
+        # 响应登录结果
+        # return redirect(reverse('contents:index'))
+        return response
+
+
+class LogoutView(View):
+    '''退出登陆'''
+
+    def get(self, request):
+        # 1. 清除session中的状态信息
+        logout(request)
+        # login(request, user)存入的时候要传入user，会把user的id存储到session中，logout的话就直接会从request对象中找到id清除session
+
+        # 2. 清除cookie中的username
+        response = redirect(request.GET.get('next', '/'))
+        response.delete_cookie('username')
+
+        # 3. 重定向
+        return response
+
+
+class UserInfoView(View):
+    def get(self, request):
+        '''提供用户中心界面'''
+        # 判断是否登陆，登陆了就返回用户中心，没有就返回登陆界面
+        # user = request.user  # 通过请求对象获取user（从session里面找）
+        # 使用 is_authenticated 方法，如果是匿名用户就返回false，
+        # 用户存在就返回true
+        # if user.is_authenticated:
+        #     return render(request, 'user_center_info.html')
+        # else:
+        #     return render(request, '/login/?next=/info/')
+        return render(request, 'user_center_info.html')
+    # return render(request, 'XXXX.html')

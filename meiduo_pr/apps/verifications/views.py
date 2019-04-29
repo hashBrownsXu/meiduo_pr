@@ -106,8 +106,7 @@ class SMSCodeView(View):
 
         send_sms_code.delay(mobile, sms_code)
 
-
-
-
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '发送短信成功'})
+
+
