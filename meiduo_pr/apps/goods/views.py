@@ -144,7 +144,6 @@ class DetailView(View):
             'spec_qs': spu_spec_qs,  # 当前商品的所有规格数据
         }
         return render(request, 'detail.html', context)
-        pass
 
 
 class DetailVisitView(View):
@@ -160,21 +159,24 @@ class DetailVisitView(View):
 
         # 获取当前日期
         today_date = timezone.localdate()
-        try:
+        # try:
+        #
+        #     # 查询当前类别今天没有没统计过  # 注意不要写成data了
+        #     count_data = GoodsVisitCount.objects.get(category=category, date=today_date)
+        # except GoodsVisitCount.DoesNotExist:
+        #     # 如果当前类别今天是第一次来统计,就创建一个新记录,并给它指定是统计那一个类别
+        #     count_data = GoodsVisitCount(
+        #         category=category,
+        #
+        #     )
 
-            # 查询当前类别今天没有没统计过  # 注意不要写成data了
-            count_data = GoodsVisitCount.objects.get(category=category, date=today_date)
-        except GoodsVisitCount.DoesNotExist:
-            # 如果当前类别今天是第一次来统计,就创建一个新记录,并给它指定是统计那一个类别
-            count_data = GoodsVisitCount(
-                category=category,
 
-            )
-
-
-        count_data.count += 1  # 累加浏览量
-        count_data.save()
+        # count_data.count += 1  # 累加浏览量
+        # count_data.save()
 
 
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': "ok"})
+
+
+
 

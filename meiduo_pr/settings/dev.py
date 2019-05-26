@@ -56,6 +56,11 @@ INSTALLED_APPS = [
     'users',
     'oauth',
     'areas',
+    'goods',
+    'contents',
+    'haystack',
+
+
 ]
 
 
@@ -171,7 +176,22 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
+    "history": { # 用户浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "carts": { # 购物车存储方案
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/4",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
 
@@ -225,3 +245,35 @@ LOGIN_URL = '/login/'
 QQ_CLIENT_ID = '101518219'
 QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
 QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'   # 指定邮件后端
+EMAIL_HOST = 'smtp.163.com'     # 发邮件主机
+EMAIL_PORT = 25     # 发邮件端口
+EMAIL_HOST_USER = 'xuzenghash@163.com'    # 授权的邮箱
+EMAIL_HOST_PASSWORD = 'xu6638028'     # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_FROM = '美多商城<xuzenghash@163.com>'   # 发件人抬头
+
+# 邮箱验证链接
+EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
+
+# 指定自定义的Django文件存储类
+DEFAULT_FILE_STORAGE = 'meiduo_pr.utils.fastdfs.fdfs_storage.FastDFSStorage'
+
+# FastDFS相关参数
+FDFS_BASE_URL = 'http://192.168.220.132:8888/'
+
+
+
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.220.132:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_pr', # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'

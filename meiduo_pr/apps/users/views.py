@@ -12,6 +12,7 @@ from .models import User, Address
 from meiduo_pr.utils.response_code import RETCODE
 from meiduo_pr.utils.views import LoginRequiredView
 from verifications.views import get_redis_connection
+from goods import models
 
 
 import re
@@ -561,8 +562,8 @@ class ChangePasswordView(LoginRequiredView):
 #
 #         # 校验sku_id
 #         try:
-#             sku = SKU.objects.get(id=sku_id)
-#         except SKU.DoesNotExist:
+#             sku = models.SKU.objects.get(id=sku_id)
+#         except models.SKU.DoesNotExist:
 #             return http.HttpResponseForbidden('sku_id不存在')
 #
 #         # 创建redis连接对象
@@ -596,7 +597,7 @@ class ChangePasswordView(LoginRequiredView):
 #         # sku_qs = SKU.objects.filter(id__in=sku_id_list)  [b'3', b'2', b'5'] [2, 3, 5]
 #         skus = []  # 用来装每一个sku字典
 #         for sku_id in sku_id_list:
-#             sku = SKU.objects.get(id=sku_id)
+#             sku = models.SKU.objects.get(id=sku_id)
 #             sku_dict = {
 #                 'id': sku.id,
 #                 'name': sku.name,
@@ -606,4 +607,60 @@ class ChangePasswordView(LoginRequiredView):
 #             skus.append(sku_dict)
 #         # 响应
 #         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'skus': skus})
-#
+
+
+
+class UserBrowseHistory(View):
+
+    def post(self, request):
+        """保存用户的浏览记录"""
+        # 判断是否有用户登录，没有就不用记录浏览记录
+        user = request.user
+        if not user.is_authenticated:
+            return http.HttpResponseForbidden('用户未登录')
+        # 接受用户的参数,拿到sku_id
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+        # 校验SKU中的参数
+        try:
+            sku = models.SKU.objects.get(id=sku_id)
+        except models.SKU.DoesNotExist:
+            return http.HttpResponseForbidden('sku不存在')
+
+        # 使用管道技术保存参数
+        redis_conn = get_redis_connection('history')
+        pl = redis_conn.pipeline()
+        user_id = request.user.id
+
+        # 先去重
+        pl.lrem('history_%s' % user_id, 0, sku_id)
+        # 后保存
+        pl.lpush('history_%s' % user_id, sku_id)
+        # 在截取
+        pl.ltrim('history_%s' % user_id, 0, 4)
+        pl.execute()
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+    def get(self, request):
+        """展示用户浏览记录"""
+        # 判断是否有用户登录，没有就不用记录浏览记录
+        user = request.user
+        if not user.is_authenticated:
+            return http.HttpResponseForbidden('用户未登录')
+        # 先从redis中获取用户的浏览记录
+        redis_conn = get_redis_connection('history')
+        sku_ids = redis_conn.lrange('history_%s' % request.user.id, 0, -1)
+        # skus=[]存储用户的浏览记录
+        skus = []
+        for sku_id in sku_ids:
+            sku = models.SKU.objects.get(id=sku_id)
+            sku_dict = {
+                'id': sku.id,
+                'name': sku.name,
+                'default_image_url': sku.default_image.url,
+                'price': sku.price
+            }
+            skus.append(sku_dict)
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'skus': skus})
